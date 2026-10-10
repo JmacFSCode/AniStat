@@ -1,6 +1,6 @@
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.util.ArrayList;
 import java.io.PrintWriter;
 import java.awt.Desktop;
 import java.io.IOException;
@@ -28,11 +28,10 @@ public class Screen {
     }
 
     // WATCHLIST DISPLAY
-    public void displayWL() throws FileNotFoundException, IOException{
+    public void displayWL(ArrayList<String> dataList) throws FileNotFoundException, IOException{
         File aniStat = new File(".txt/Anistat.txt");
         
-        File data = new File(".txt/MyData.txt");
-        Scanner read = new Scanner(data);
+        
 
         PrintWriter display = new PrintWriter(aniStat);
         String indent = " ".repeat(40);
@@ -44,19 +43,20 @@ public class Screen {
         display.printf("%-40s %s %n", "-----------------", "===============================================================");
 
      
-        while(read.hasNextLine()){
-            String line = read.nextLine();
-            int split = line.indexOf('|');
+        for(int i = 0; i < dataList.size(); i++){
+            String entry = dataList.get(i);
+            String[] parts = entry.split("\\|", 2);
 
-            String anime = line.substring(0, split - 1);
-            String status = line.substring(split + 2);
+            if (parts.length != 2) {
+                continue;
+            }
+
+            String anime = parts[0].trim();
+            String status = parts[1].trim();
             display.printf("%s %-31s %31s %n", indent, anime, status);
             display.println(indent + " ***************************************************************");
         }
         
-
-
-        read.close();
         display.close();
         Desktop.getDesktop().open(aniStat);
     }
