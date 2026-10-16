@@ -28,10 +28,9 @@ public class Screen {
     }
 
     // WATCHLIST DISPLAY
-    public void displayWL(ArrayList<String> dataList) throws FileNotFoundException, IOException{
+    public void displayWL(ArrayList<Anime> dataList) throws FileNotFoundException, IOException{
         File aniStat = new File(".txt/Anistat.txt");
-        
-        
+            
 
         PrintWriter display = new PrintWriter(aniStat);
         String indent = " ".repeat(40);
@@ -43,17 +42,9 @@ public class Screen {
         display.printf("%-40s %s %n", "-----------------", "===============================================================");
 
      
-        for(int i = 0; i < dataList.size(); i++){
-            String entry = dataList.get(i);
-            String[] parts = entry.split("\\|", 2);
+        for(Anime anime : dataList){
 
-            if (parts.length != 2) {
-                continue;
-            }
-
-            String anime = parts[0].trim();
-            String status = parts[1].trim();
-            display.printf("%s %-31s %31s %n", indent, anime, status);
+            display.printf("%s %-31s %31s %n", indent, anime.getTitle(), anime.getWatchStatus());
             display.println(indent + " ***************************************************************");
         }
         

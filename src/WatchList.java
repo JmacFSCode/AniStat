@@ -9,7 +9,7 @@ public class WatchList{
 
     // Instance Variables
     private File data;
-    private ArrayList<String> wL = new ArrayList<>();
+    private ArrayList<Anime> wL = new ArrayList<>();
     
 
     // Defaults to MyData.txt
@@ -23,7 +23,7 @@ public class WatchList{
         loadWatchList();
     }
 
-    // Loads watchlist data into an array list
+    // Loads watchlist data into the <Anime> ArrayList
     public void loadWatchList() throws FileNotFoundException{
 
         wL.clear();
@@ -32,18 +32,43 @@ public class WatchList{
 
         while(read.hasNextLine()){
             String line = read.nextLine();
-            wL.add(line);
-        }
+            String[] parts = line.split(" \\| ", -1);
 
+            if (parts.length != 2 && parts.length != 4) {
+                System.out.println("Invalid entry: " + line);
+                continue;
+            }
+
+            String title = parts[0].trim();
+            String status = parts[1].trim();
+
+            if (parts.length == 2) {
+                wL.add(new Anime(title, status));
+            }
+            else {
+                try {
+                    double rating = Double.parseDouble(parts[2].trim());
+                    String description = parts[3].trim();
+
+                    wL.add(new Anime(title, status, rating, description));
+
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid rating: " + line);
+                }
+            }
+        }
         read.close();
-    }
+     }
+
+    
 
     // Updates the Watchlist data file
     public void updateWatchList() throws FileNotFoundException{
         PrintWriter update = new PrintWriter(data);
 
-        for(int i = 0; i < wL.size(); i++){
-            update.println(wL.get(i));
+
+        for(Anime anime : wL){
+            update.println(anime.getTitle() + " | " + anime.getWatchStatus() + " | " + anime.getRating() + " | " + anime.getDescription());
         }
 
         update.close();
@@ -51,7 +76,8 @@ public class WatchList{
 
     // Adds Anime to WatchList
     public void addAnime(String name, String status) throws FileNotFoundException{
-        String anime = name + " | " + status;
+        
+        Anime anime = new Anime(name, status);
         wL.add(anime);
         System.out.println("Anime Added Successfully!\n");
 
@@ -61,9 +87,8 @@ public class WatchList{
 
     // Removes Anime From WatchList
     public void remAnime(String name) throws FileNotFoundException{
-        boolean remove = wL.removeIf(anime -> {String title = anime.split("\\|", 2)[0].trim();
-        return title.equalsIgnoreCase(name.trim()); 
-        });
+        
+        boolean remove = wL.removeIf(anime -> anime.getTitle().equalsIgnoreCase(name.trim()));
 
         if(remove){
             System.out.println("Anime Removed Successfully!\n");
@@ -80,20 +105,18 @@ public class WatchList{
     public void editStatus(String name, String newStatus) throws FileNotFoundException{
         boolean found = false;
 
-        for (int i = 0; i < wL.size(); i++) {
+        for (Anime anime : wL){
 
-            String anime = wL.get(i);
+            if (anime.getTitle().equalsIgnoreCase(name)){
 
-            if (anime.startsWith(name + " | ")) {
-
-                wL.set(i, name + " | " + newStatus);
+                anime.setWatchStatus(newStatus);
 
                 found = true;
                 break;
             }
         }
 
-        if (found) {
+        if (found == true) {
             updateWatchList();
             System.out.println("Status Updated Successfully!\n");
         }
@@ -104,21 +127,21 @@ public class WatchList{
     }
 
     // Filters the entered watchlist
-    public ArrayList<String> filterWLTo(ArrayList<String> list, int option){
+    public ArrayList<Anime> filterWLTo(ArrayList<Anime> list, int option){
 
-        ArrayList<String> filteredWL = new ArrayList<>(list);
+        ArrayList<Anime> filteredWL = new ArrayList<>(list);
 
         // Filter only Completed
         if(option == 1){         
-            filteredWL.removeIf(anime -> !anime.contains("| COMPLETED"));
+            filteredWL.removeIf(anime -> !anime.getWatchStatus().equals("COMPLETED"));
         }
         // Filter Only Watching
         else if(option == 2){
-             filteredWL.removeIf(anime -> !anime.contains("| WATCHING"));
+             filteredWL.removeIf(anime -> !anime.getWatchStatus().equals("WATCHING"));
         }
         // Filter Only Planning
         else if(option == 3){
-             filteredWL.removeIf(anime -> !anime.contains("| PLAN TO WATCH"));
+             filteredWL.removeIf(anime -> !anime.getWatchStatus().equals("PLAN TO WATCH"));
         }
         else if(option == 4){
              // Brings back watchList with all statuses; Default
@@ -129,13 +152,13 @@ public class WatchList{
     }
 
     // Sorts the entered WatchList
-    public ArrayList<String> sortWLBy(ArrayList<String> list ,int option){
+    public ArrayList<Anime> sortWLBy(ArrayList<Anime> list ,int option){
 
-        ArrayList<String> sortedWL = new ArrayList<>(list);
+        ArrayList<Anime> sortedWL = new ArrayList<>(list);
 
         // Sorts Alphabetically
         if(option == 1){
-            Collections.sort(sortedWL);
+            sortedWL.sort((a, b) -> a.getTitle().compareToIgnoreCase(b.getTitle()));
         }
         // Sorts by Newest First
         else if(option == 2){
@@ -149,21 +172,17 @@ public class WatchList{
         return sortedWL;
     }
 
+
     // Returns a list that has been filtered & sorted appropriately
-    public ArrayList<String> organizeWatchList(int sortOption, int filterOption) {
+    public ArrayList<Anime> organizeWatchList(int sortOption, int filterOption) {
 
-        ArrayList<String> filtered = filterWLTo(wL, filterOption);
+        ArrayList<Anime> filtered = filterWLTo(wL, filterOption);
 
-        ArrayList<String> sorted = sortWLBy(filtered, sortOption);
+        ArrayList<Anime> sorted = sortWLBy(filtered, sortOption);
 
         return sorted;
     }
 
-
-    
-
-
-    
 
     
     

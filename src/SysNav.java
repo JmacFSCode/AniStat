@@ -36,7 +36,7 @@ public class SysNav{
         
         return "";
     }
-
+    
 
     // watchlist nav method
     public void navFrmWL() throws IOException{
@@ -47,7 +47,7 @@ public class SysNav{
         
         while(choice != 3){
             
-            ArrayList<String> result = watchlist.organizeWatchList(sortOption, filterOption);
+            ArrayList<Anime> result = watchlist.organizeWatchList(sortOption, filterOption);
             screen.displayWL(result);
 
             // edit watchlist, filter/sort, go back
