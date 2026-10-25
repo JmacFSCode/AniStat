@@ -15,16 +15,18 @@ public class WatchList{
     // Defaults to MyData.txt
     public WatchList() throws FileNotFoundException{
         data = new File(".txt/MyData.txt");
-        loadWatchList();
+        loadWatchlist();
     }
     // User can set the file name
     public WatchList(File data_) throws FileNotFoundException{
         data = data_;
-        loadWatchList();
+        loadWatchlist();
     }
 
-    // Loads watchlist data into the <Anime> ArrayList
-    public void loadWatchList() throws FileNotFoundException{
+
+
+    // Loads data into the <Anime> ArrayList
+    public void loadWatchlist() throws FileNotFoundException{
 
         wL.clear();
 
@@ -32,7 +34,7 @@ public class WatchList{
 
         while(read.hasNextLine()){
             String line = read.nextLine();
-            String[] parts = line.split(" \\| ", -1);
+            String[] parts = line.split(" \\| ", 4);
 
             if (parts.length != 2 && parts.length != 4) {
                 System.out.println("Invalid entry: " + line);
@@ -58,12 +60,10 @@ public class WatchList{
             }
         }
         read.close();
-     }
+    }
 
-    
-
-    // Updates the Watchlist data file
-    public void updateWatchList() throws FileNotFoundException{
+    // Updates the watchlist data file
+    public void updateWatchlist() throws FileNotFoundException{
         PrintWriter update = new PrintWriter(data);
 
 
@@ -74,28 +74,35 @@ public class WatchList{
         update.close();
     }
 
-    // Adds Anime to WatchList
+    
+
+    // Adds Anime to watchlist
     public void addAnime(String name, String status) throws FileNotFoundException{
         
-        Anime anime = new Anime(name, status);
-        wL.add(anime);
-        System.out.println("Anime Added Successfully!\n");
-
-        updateWatchList();
+        Anime anime = findAnime(name);
+        if(anime == null){
+            anime = new Anime(name, status);
+            wL.add(anime);
+            System.out.println("Anime Added Successfully!\n");
+            updateWatchlist();
+        }
+        else{
+            System.out.println("Anime Already In WatchList.");
+        }
         
     }
 
-    // Removes Anime From WatchList
+    // Removes Anime From watchlist
     public void remAnime(String name) throws FileNotFoundException{
         
         boolean remove = wL.removeIf(anime -> anime.getTitle().equalsIgnoreCase(name.trim()));
 
         if(remove){
             System.out.println("Anime Removed Successfully!\n");
-            updateWatchList();
+            updateWatchlist();
         }
         else{
-            System.out.println("Anime Not Found In Watchlist.\n");
+            System.out.println("Removal Unsuccessful.\n");
         }
         
 
@@ -103,30 +110,53 @@ public class WatchList{
 
     // Edit an Anime's Watch Status
     public void editStatus(String name, String newStatus) throws FileNotFoundException{
-        boolean found = false;
+        Anime anime = findAnime(name);
 
-        for (Anime anime : wL){
-
-            if (anime.getTitle().equalsIgnoreCase(name)){
-
-                anime.setWatchStatus(newStatus);
-
-                found = true;
-                break;
-            }
-        }
-
-        if (found == true) {
-            updateWatchList();
+        if (anime != null) {
+            anime.setWatchStatus(newStatus);
+            updateWatchlist();
             System.out.println("Status Updated Successfully!\n");
         }
         else {
-            System.out.println("Anime Not Found In Watchlist.\n");
+            System.out.println("Update Unsuccessful.\n");
         }
 
     }
 
-    // Filters the entered watchlist
+    // Edit an Anime's Rating
+    public void editRating(String name, double newRating) throws FileNotFoundException{
+        
+        Anime anime = findAnime(name);
+
+        if (anime != null) {
+            anime.setRating(newRating);
+            updateWatchlist();
+            System.out.println("Rating Updated Successfully!\n");
+        }
+        else {
+            System.out.println("Update Unsuccessful.\n");
+        }
+        
+
+    }
+
+    // Edit an Anime's Description
+    public void editDesc(String name, String newDesc) throws FileNotFoundException{
+        
+        Anime anime = findAnime(name);
+
+        if (anime != null) {
+            anime.setDescription(newDesc);
+            updateWatchlist();
+            System.out.println("Description Updated Successfully!\n");
+        }
+        else {
+            System.out.println("Update Unsuccessful.\n");
+        }
+    }
+
+
+    // Filters the Watchlist
     public ArrayList<Anime> filterWLTo(ArrayList<Anime> list, int option){
 
         ArrayList<Anime> filteredWL = new ArrayList<>(list);
@@ -144,14 +174,14 @@ public class WatchList{
              filteredWL.removeIf(anime -> !anime.getWatchStatus().equals("PLAN TO WATCH"));
         }
         else if(option == 4){
-             // Brings back watchList with all statuses; Default
+             // Brings back watchlist with all statuses; Default
         }
         
         return filteredWL;
 
     }
 
-    // Sorts the entered WatchList
+    // Sorts the entered Watchlist
     public ArrayList<Anime> sortWLBy(ArrayList<Anime> list ,int option){
 
         ArrayList<Anime> sortedWL = new ArrayList<>(list);
@@ -172,7 +202,6 @@ public class WatchList{
         return sortedWL;
     }
 
-
     // Returns a list that has been filtered & sorted appropriately
     public ArrayList<Anime> organizeWatchList(int sortOption, int filterOption) {
 
@@ -183,7 +212,26 @@ public class WatchList{
         return sorted;
     }
 
+    
+    // Sorts Anime By Ratings Highest to Lowest
+    public ArrayList<Anime> rankByRating(){
+        ArrayList<Anime> rankings = new ArrayList<>(wL);
 
+        rankings.sort((a, b) -> Double.compare(b.getRating(), a.getRating()));
+
+        return rankings;
+    }
+
+
+    public Anime findAnime(String title) {
+
+        for (Anime anime : wL) {
+            if (anime.getTitle().equalsIgnoreCase(title.trim())) {
+                return anime;
+            }
+        }
+        return null;
+    }
     
     
 }

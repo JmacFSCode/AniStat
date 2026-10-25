@@ -7,14 +7,14 @@ public class Anime {
     public Anime(){
         title = "N/A";
         status = "N/A";
-        rating = 0;
+        rating = -1;
         desc = "N/A";
     }
 
     public Anime(String _title, String _status){
         title = _title;
         status = _status;
-        rating = 0;
+        rating = -1;
         desc = "N/A";
     }
 
@@ -24,7 +24,6 @@ public class Anime {
         rating = _rating;
         desc = _desc;
     }
-
 
      public String getTitle() {
         return title;
