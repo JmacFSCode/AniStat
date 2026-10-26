@@ -28,7 +28,7 @@ public class SysNav{
             navFrmWL();
         }
         else if(choice == 2){
-            System.out.println("RANKINGS (WIP)");
+            navFrmRankings();
         }
         else if(choice == 3){
             return "CLOSE";
@@ -36,9 +36,9 @@ public class SysNav{
         
         return "";
     }
+    
 
-
-    // watchlist nav method
+    // Watchlist nav method
     public void navFrmWL() throws IOException{
         
         WatchList watchlist = new WatchList();
@@ -47,16 +47,16 @@ public class SysNav{
         
         while(choice != 3){
             
-            ArrayList<String> result = watchlist.organizeWatchList(sortOption, filterOption);
+            ArrayList<Anime> result = watchlist.organizeWatchList(sortOption, filterOption);
             screen.displayWL(result);
 
-            // edit watchlist, filter/sort, go back
+            // edit Watchlist, filter/sort, go back
             System.out.print("\nWhat Do You Want To Do? (Enter a number 1 - 3): ");
             choice = getValidInt(1, 3);
             
             int choice2;
 
-            // edit watchlist
+            // edit Watchlist
             if(choice == 1){
                 System.out.println("Add? (1)\nRemove? (2)\nEdit Status? (3)");
                 System.out.print("Enter a number 1 - 3: ");
@@ -67,7 +67,11 @@ public class SysNav{
                 
                 if(choice2 == 1){
                     System.out.print("Enter Anime Name: ");
-                    name = in.nextLine();
+                    name = in.nextLine().trim();
+                    while (name.isEmpty()){
+                        System.out.print("Anime Name Cannot Be Empty. Try Again: ");
+                        name = in.nextLine().trim();
+                    } 
                     System.out.print("Enter Anime Watch Status (COMPLETED, WATCHING, OR PLAN TO WATCH): ");
                     status = in.nextLine().trim().toUpperCase();
 
@@ -80,13 +84,19 @@ public class SysNav{
                 }
                 else if(choice2 == 2){
                     System.out.print("What Anime to Remove?: ");
-                    name = in.nextLine();
+                    name = verifyPresence(watchlist);
+                    if(name == null){
+                        continue;
+                    }
                     
                     watchlist.remAnime(name);
                 }
                 else if(choice2 == 3){
                     System.out.print("Edit What Anime Status?: ");
-                    name = in.nextLine();
+                    name = verifyPresence(watchlist);
+                    if(name == null){
+                        continue;
+                    }
                     System.out.print("Set Status To? (COMPLETED, WATCHING, OR PLAN TO WATCH): ");
                     status = in.nextLine().trim().toUpperCase();
 
@@ -100,7 +110,7 @@ public class SysNav{
                 
 
             }
-            // sort or filter watchlist
+            // sort or filter WatchList
             else if(choice == 2){
                 System.out.println("Sort(1) or Filter(2)?");
                 System.out.print("Enter a number 1 - 2: ");
@@ -121,21 +131,67 @@ public class SysNav{
                     filterOption = choice3;
                 }
             }
-            // go back
-            else if(choice == 3){
-                return;
-            }
         }
 
     }
 
-    // Ratings Nav method
-    // public void navFrmRankings() throws IOException{
-    // }
+    // Rankings Nav method
+    public void navFrmRankings() throws IOException{
+        
+        WatchList watchlist = new WatchList();
+
+        int choice = 0;
+        while(choice != 3){
+
+            ArrayList<Anime> result = watchlist.rankByRating();
+            screen.displayRatings(result);
+
+            System.out.println("\n1. Edit Rating");
+            System.out.println("2. Edit Description");
+            System.out.println("3. Back");
+            System.out.print("(Enter a number 1 - 3): ");
+            choice = getValidInt(1, 3);
 
 
+            String name;
+
+            if(choice == 1){
+                System.out.print("Edit What Anime's Rating?: ");
+                name = verifyPresence(watchlist);
+                if(name == null){
+                    continue;
+                }
+                System.out.print("Rate (0.0 - 10.0): ");
+                double rating = getValidRating();
+
+                watchlist.editRating(name, rating);
+            }
+            else if(choice == 2){
+                System.out.print("Edit What Anime's Description?: ");
+                name = verifyPresence(watchlist);
+                if(name == null){
+                    continue;
+                }
+                System.out.print("Enter A Brief Review (Max 81 Char.): ");
+                String review = in.nextLine();
+                
+                while(review.length() > 81){
+                    System.out.print("Too Many Characters (Max 81 Char.): ");
+                    review = in.nextLine();
+                }
+
+                watchlist.editDesc(name, review);
+            }
+        
+        }
+
+
+
+    }
+
+    // ***************************
     // SUPPLEMENTARY LOCAL METHODS
-    // *********************
+    // ***************************
 
     private int getValidInt(int min, int max) {
 
@@ -158,6 +214,52 @@ public class SysNav{
         }
     }
 
+    private double getValidRating(){
+
+        while(true){
+            
+            String input = in.nextLine().trim();
+
+            try{
+                double rating = Double.parseDouble(input);
+                
+                if(rating >= 0 && rating <= 10){
+                    return Math.round(rating * 10.0) / 10.0;
+                }
+                else{
+                    System.out.print("Invalid Rating. Rate From 0.0 - 10.0: ");
+                }
+
+            }
+            catch (NumberFormatException e){
+                System.out.print("Invalid Input. Enter a number: ");
+            }
+
+        }
+
+    }
+
+    private String verifyPresence(WatchList list){
+
+        while(true){
+
+            String input = in.nextLine().trim();
+
+            if (input.equalsIgnoreCase("LEAVE")) {
+                return null;
+            }
+
+            Anime result = list.findAnime(input);
+            
+            if(result != null){
+                return result.getTitle();
+            }
+
+            System.out.print("Anime Not Found. Try Again or Enter \"LEAVE\" to Exit: ");
+
+
+        }
+    }
 
     
 }
